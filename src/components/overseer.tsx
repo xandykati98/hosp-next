@@ -4,7 +4,7 @@ import AuthContext from './auth_context'
 import Login from '~/pages/login'
 import Header from './header'
 
-const Overseer = (props:any) => {
+const Overseer = (props:{children: JSX.Element, supabaseClient: any}) => {
     return <div>
         <Header/>
         {props.children}
