@@ -1,4 +1,6 @@
 import { useInView, animated } from "@react-spring/web"
+import Empresas from "~/components/empresas"
+import SomeProperties from "~/components/property.some"
 
 function Count() {
   const stats = [
@@ -89,6 +91,9 @@ export default function Home() {
       </div>
     </div>
     <Count/>
+    <SomeProperties/>
+    <Empresas/>
+    
     </>
   )
 }

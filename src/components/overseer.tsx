@@ -3,11 +3,13 @@ import { api } from '~/utils/api'
 import AuthContext from './auth_context'
 import Login from '~/pages/login'
 import Header from './header'
+import Footer from './footer'
 
 const Overseer = (props:{children: JSX.Element, supabaseClient: any}) => {
     return <div>
         <Header/>
         {props.children}
+        <Footer/>
     </div>
 
     // this is for authentication and authorization

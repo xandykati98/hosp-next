@@ -16,7 +16,6 @@ model Imovel {
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now())
     
-    empresaId   String @db.VarChar(255)
     desc        String @db.Text
 
     precoVenda            Float
@@ -29,13 +28,18 @@ model Imovel {
 
     isAtivo               Boolean
     isPro                 Boolean
-
+    isUltra               Boolean
+    @@index([isAtivo])
+    
     numero                String @db.VarChar(25)
     rua                   String @db.VarChar(255)
     bairro                String @db.VarChar(255)
     cidade                String @db.VarChar(255)
     estado                String @db.VarChar(4)
 
+    empresaId             String @db.VarChar(255)
+    empresa               Empresa @relation(fields: [empresaId], references: [id])
+    @@index([empresaId])
 
     fotos FotoImovel[]
 }
@@ -55,10 +59,19 @@ model FotoImovel {
     isAtivo     Boolean
 }
 
+model Empresa {
+  id       String   @id @default(cuid())
+  foto     String   @db.VarChar(255)
+  nome     String   @db.VarChar(255)
+  email    String   @db.VarChar(255)
+  telefone String   @db.VarChar(255)
+
+  imoveis Imovel[]
+}
+
 model User {
     id        String   @id @default(cuid())
     email     String   @unique
     name      String
     telefone  String
-
 }
