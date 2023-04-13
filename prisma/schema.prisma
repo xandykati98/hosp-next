@@ -11,23 +11,54 @@ datasource db {
   relationMode = "prisma"
 }
 
-model Post {
+model Imovel {
     id        String   @id @default(cuid())
     createdAt DateTime @default(now())
+    updatedAt DateTime @default(now())
     
-    empresa   String @db.VarChar(255)
-    desc      String @db.Text
+    empresaId   String @db.VarChar(255)
+    desc        String @db.Text
 
-    createdById String
-    createdBy User   @relation(fields: [createdById], references: [id], onDelete: Cascade)
-    @@index([empresa])
-    @@index([createdById])
+    precoVenda            Float
+    precoLocacao          Float
+    precoDescontoVenda    Float
+    precoDescontoLocacao  Float
+
+    isVenda               Boolean
+    isLocacao             Boolean
+
+    isAtivo               Boolean
+    isPro                 Boolean
+
+    numero                String @db.VarChar(25)
+    rua                   String @db.VarChar(255)
+    bairro                String @db.VarChar(255)
+    cidade                String @db.VarChar(255)
+    estado                String @db.VarChar(4)
+
+
+    fotos FotoImovel[]
+}
+
+model FotoImovel {
+    id          String   @id @default(cuid())
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @default(now())
+    
+    imovelId    String  @db.VarChar(255)
+    imovel      Imovel @relation(fields: [imovelId], references: [id])
+    @@index([imovelId])
+
+    url         String  @db.VarChar(255)
+    thumbnail   String  @db.VarChar(255)
+    isPrincipal Boolean
+    isAtivo     Boolean
 }
 
 model User {
     id        String   @id @default(cuid())
-    empresa   String   @db.VarChar(255)
+    email     String   @unique
+    name      String
+    telefone  String
 
-    posts     Post[]
-    @@index([empresa])
 }
