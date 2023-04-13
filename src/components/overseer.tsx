@@ -6,11 +6,11 @@ import Login from '~/pages/login'
 const Overseer = (props:any) => {
     const user = useUser() as User
     const { data, isLoading } = api.user.getUserData.useQuery({ id: user?.id || '' })
-    if (!user) {
-        return <Login/>
-    }
     if (isLoading) {
         return <div>loading</div>
+    }
+    if (!user) {
+        return <Login/>
     }
     if (user && !data?.empresa) {
         return <>tem usuario, nn tem empresa<button onClick={() => props.supabaseClient.auth.signOut()}>sair</button></>
