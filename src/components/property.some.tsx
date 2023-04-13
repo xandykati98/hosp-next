@@ -1,5 +1,77 @@
+import { Imovel } from "@prisma/client"
 import PropertyCard from "./property.card"
 
+const mock_properties:Imovel[] = [
+    {
+        id: '1',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        desc: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
+        empresaId: '2',
+        rua: 'Rua de Testes',
+        bairro: 'Bairro de Testes',
+        cidade: 'Cidade de Testes',
+        estado: 'RS',
+        precoVenda: 100000,
+        precoLocacao: 1000,
+        isAtivo: true,
+        isVenda: true,
+        isLocacao: false,
+        numero: '321',
+        cep: '12345-678',
+        titulo: 'Este é o título do imóvel',
+        isPro: true,
+        isUltra: false,
+        precoDescontoLocacao: null,
+        precoDescontoVenda: null,
+    },
+    {
+        id: '2',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        desc: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
+        empresaId: '2',
+        rua: 'Rua de Testes',
+        bairro: 'Bairro de Testes',
+        cidade: 'Cidade de Testes',
+        estado: 'RS',
+        precoVenda: 100000,
+        precoLocacao: 1000,
+        isAtivo: true,
+        isVenda: true,
+        isLocacao: false,
+        numero: '321',
+        cep: '12345-678',
+        titulo: 'Este é o título do imóvel',
+        isPro: true,
+        isUltra: false,
+        precoDescontoLocacao: null,
+        precoDescontoVenda: null,
+    },
+    {
+        id: '3',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        desc: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
+        empresaId: '2',
+        rua: 'Rua de Testes',
+        bairro: 'Bairro de Testes',
+        cidade: 'Cidade de Testes',
+        estado: 'RS',
+        precoVenda: 100000,
+        precoLocacao: 1000,
+        isAtivo: true,
+        isVenda: true,
+        isLocacao: false,
+        numero: '321',
+        cep: '12345-678',
+        titulo: 'Este é o título do imóvel',
+        isPro: true,
+        isUltra: false,
+        precoDescontoLocacao: null,
+        precoDescontoVenda: null,
+    },
+]
 const posts = [
     {
         id: 1,
@@ -66,8 +138,8 @@ function SomeProperties() {
             </p>
           </div>
           <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 pt-10 sm:mt-8 sm:pt-0 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {posts.map((post) => (
-              <PropertyCard key={post.id} property={post}/>
+            {mock_properties.map((imv) => (
+              <PropertyCard key={imv.id} property={imv}/>
             ))}
           </div>
         </div>

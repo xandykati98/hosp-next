@@ -16,12 +16,14 @@ model Imovel {
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now())
     
+    titulo      String @db.Text
     desc        String @db.Text
+    cep        String @db.VarChar(255)
 
-    precoVenda            Float
-    precoLocacao          Float
-    precoDescontoVenda    Float
-    precoDescontoLocacao  Float
+    precoVenda            Float?
+    precoLocacao          Float?
+    precoDescontoVenda    Float?
+    precoDescontoLocacao  Float?
 
     isVenda               Boolean
     isLocacao             Boolean
@@ -30,7 +32,7 @@ model Imovel {
     isPro                 Boolean
     isUltra               Boolean
     @@index([isAtivo])
-    
+
     numero                String @db.VarChar(25)
     rua                   String @db.VarChar(255)
     bairro                String @db.VarChar(255)
