@@ -12,18 +12,19 @@ datasource db {
 }
 
 model Imovel {
-    id        String   @id @default(cuid())
+    id        String   @id @default(cuid()) 
+    listingId BigInt
     createdAt DateTime @default(now())
     updatedAt DateTime @default(now())
     
     titulo      String @db.Text
-    desc        String @db.Text
-    cep        String @db.VarChar(255)
+    descricao   String @db.VarChar(2000)
+    cep         String? @db.VarChar(25)
 
-    precoVenda            Float?
-    precoLocacao          Float?
-    precoDescontoVenda    Float?
-    precoDescontoLocacao  Float?
+    precoVenda            Decimal?
+    precoLocacao          Decimal?
+    precoDescontoVenda    Decimal?
+    precoDescontoLocacao  Decimal?
 
     isVenda               Boolean
     isLocacao             Boolean
@@ -33,7 +34,7 @@ model Imovel {
     isUltra               Boolean
     @@index([isAtivo])
 
-    tipo                  String @db.VarChar(255)
+    tipo                  String?
     numero                String @db.VarChar(25)
     rua                   String @db.VarChar(255)
     bairro                String @db.VarChar(255)
@@ -44,14 +45,14 @@ model Imovel {
     empresa               Empresa @relation(fields: [empresaId], references: [id])
     @@index([empresaId])
 
-    areaTotal             Float?
+    areaTotal             Decimal?
     banheiros             Int?
     quartos               Int?
     suites                Int?
     vagas                 Int?
 
-    latitude              Float?
-    longitude             Float?
+    latitude              Decimal?
+    longitude             Decimal?
 
 
     categorias CaracteristicasImoveis[]
@@ -77,16 +78,15 @@ model CaracteristicasImoveis {
 }
 
 model FotoImovel {
-    id          String   @id @default(cuid())
+    id String @id @default(cuid())
     createdAt   DateTime @default(now())
-    updatedAt   DateTime @default(now())
     
     imovelId    String  @db.VarChar(255)
     imovel      Imovel @relation(fields: [imovelId], references: [id])
     @@index([imovelId])
-
-    url         String  @db.VarChar(255)
-    thumbnail   String  @db.VarChar(255)
+    caption     String  
+    url         String  @db.VarChar(800)
+    thumbnail   String  @db.VarChar(800)
     isPrincipal Boolean
     isAtivo     Boolean
 }
