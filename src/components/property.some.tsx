@@ -1,19 +1,20 @@
-import { Imovel } from "@prisma/client"
+import { Imovel, Prisma } from "@prisma/client"
 import PropertyCard from "./property.card"
+import { api } from "~/utils/api"
 
 const mock_properties:Imovel[] = [
     {
         id: '1',
         createdAt: new Date(),
         updatedAt: new Date(),
-        desc: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
+        descricao: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
         empresaId: '2',
         rua: 'Rua de Testes',
         bairro: 'Bairro de Testes',
         cidade: 'Cidade de Testes',
         estado: 'RS',
-        precoVenda: 100000,
-        precoLocacao: 1000,
+        precoVenda: new Prisma.Decimal(100000),
+        precoLocacao: new Prisma.Decimal(1000),
         isAtivo: true,
         isVenda: true,
         isLocacao: false,
@@ -24,19 +25,28 @@ const mock_properties:Imovel[] = [
         isUltra: false,
         precoDescontoLocacao: null,
         precoDescontoVenda: null,
+        listingId: String(1),
+        tipo: 'Casa',
+        areaTotal: new Prisma.Decimal(100),
+        banheiros: 2,
+        quartos: 3,
+        suites: 1,
+        vagas: 2,
+        latitude: new Prisma.Decimal(0),
+        longitude: new Prisma.Decimal(0),
     },
     {
         id: '2',
         createdAt: new Date(),
         updatedAt: new Date(),
-        desc: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
+        descricao: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
         empresaId: '2',
         rua: 'Rua de Testes',
         bairro: 'Bairro de Testes',
         cidade: 'Cidade de Testes',
         estado: 'RS',
-        precoVenda: 100000,
-        precoLocacao: 1000,
+        precoVenda: new Prisma.Decimal(100000),
+        precoLocacao: new Prisma.Decimal(1000),
         isAtivo: true,
         isVenda: true,
         isLocacao: false,
@@ -47,19 +57,29 @@ const mock_properties:Imovel[] = [
         isUltra: false,
         precoDescontoLocacao: null,
         precoDescontoVenda: null,
+        listingId: String(2),
+        tipo: 'Casa',
+        areaTotal: new Prisma.Decimal(100),
+        banheiros: 2,
+        quartos: 3,
+        suites: 1,
+        vagas: 2,
+        latitude: new Prisma.Decimal(0),
+        longitude: new Prisma.Decimal(0),
     },
     {
+        
         id: '3',
         createdAt: new Date(),
         updatedAt: new Date(),
-        desc: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
+        descricao: 'Este belíssimo apartamento está localizado em um bairro tranquilo e arborizado, a apenas alguns minutos do centro da cidade. Com três quartos espaçosos e uma ampla sala de estar, o imóvel é perfeito para famílias ou para quem deseja espaço para trabalhar em casa. A cozinha moderna possui acabamentos em mármore e equipamentos de última geração, tornando-a ideal para preparar refeições gourmet.',
         empresaId: '2',
         rua: 'Rua de Testes',
         bairro: 'Bairro de Testes',
         cidade: 'Cidade de Testes',
         estado: 'RS',
-        precoVenda: 100000,
-        precoLocacao: 1000,
+        precoVenda: new Prisma.Decimal(100000),
+        precoLocacao: new Prisma.Decimal(1000),
         isAtivo: true,
         isVenda: true,
         isLocacao: false,
@@ -70,6 +90,15 @@ const mock_properties:Imovel[] = [
         isUltra: false,
         precoDescontoLocacao: null,
         precoDescontoVenda: null,
+        listingId: String(3),
+        tipo: 'Casa',
+        areaTotal: new Prisma.Decimal(100),
+        banheiros: 2,
+        quartos: 3,
+        suites: 1,
+        vagas: 2,
+        latitude: new Prisma.Decimal(0),
+        longitude: new Prisma.Decimal(0),
     },
 ]
 const posts = [
@@ -127,7 +156,16 @@ const posts = [
     // More posts...
   ]
   
-function SomeProperties() {
+function SomeProperties({ limit }: { limit: number }) {
+
+    const { data, isLoading } = api.home.getSomeProperties.useQuery({ limit })
+
+    if (isLoading) {
+        return <div>Loading...</div>
+    }
+    if (!data) {
+        return null
+    }
     return (
       <div className="bg-white mb-12">
         <div className="mx-auto max-w-7xl px-6 lg:px-8">
@@ -138,7 +176,7 @@ function SomeProperties() {
             </p>
           </div>
           <div className="mx-auto mt-10 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-16 pt-10 sm:mt-8 sm:pt-0 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {mock_properties.map((imv) => (
+            {data.map((imv) => (
               <PropertyCard key={imv.id} property={imv}/>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import { Imovel } from "@prisma/client"
 import { useInView, animated } from "@react-spring/web"
+import { api } from "~/utils/api"
 
 const PropertyCard = ({ property }: { property: Imovel }) => {
     
@@ -14,21 +15,30 @@ const PropertyCard = ({ property }: { property: Imovel }) => {
         })
     )
 
+    const { data: fotos, isLoading: isLoadingFotos } = api.imovel.getPropertyPhotos.useQuery({ imovelId: property.id, limit: 1 })
+    const { data: empresa, isLoading: isLoadingEmpresa } = api.empresa.getEmpresaById.useQuery({ id: property.empresaId })
+
     return <animated.article ref={ref} style={springs} key={property.id} className="flex max-w-xl flex-col items-start justify-between pb-4">
-        <a href={'#'} className="w-[100%] h-64 mb-4 ">
-            <div className="bg-[url(/2.jpg)] rounded-md w-[100%] h-64 bg-cover shadow-md ring-1 ring-gray-900/10 hover:ring-gray-900/20">
-                
-            </div>
-        </a>
+        {
+            isLoadingFotos || !fotos ? <a href={'#'} className="w-[100%] h-64 mb-4 rounded-md bg-gray-500 animate-pulse"></a>
+            : <a href={'#'} className="w-[100%] h-64 mb-4 rounded-md">
+                <div 
+                style={{ backgroundImage: `url(${fotos[0]?.url})` }}
+                className={`rounded-md w-[100%] h-64 bg-cover shadow-md ring-1 ring-gray-900/10 hover:ring-gray-900/20`}>
+                    
+                </div>
+            </a>
+        }
+        
         <div className="flex items-center gap-x-4 text-xs">
-        <time dateTime={'Mar 16, 2020'} className="text-gray-500">
-            {'Mar 16, 2020'}
+        <time dateTime={property.updatedAt.toLocaleDateString(undefined, { weekday: undefined, year: 'numeric', month: 'long', day: 'numeric' })} className="text-gray-500">
+            {property.updatedAt.toLocaleDateString(undefined, { weekday: undefined, year: 'numeric', month: 'long', day: 'numeric' })}
         </time>
         <a
-            href={'Casa'}
+            href={"#"}
             className="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600 hover:bg-gray-100"
         >
-            {'Casa'}
+            {property.tipo}
         </a>
         </div>
         <div className="group relative">
@@ -38,20 +48,37 @@ const PropertyCard = ({ property }: { property: Imovel }) => {
             {property.titulo}
             </a>
         </h3>
-        <p className="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">{property.desc}</p>
+        <p className="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">{property.descricao}</p>
         </div>
-        <div className="relative mt-8 flex items-center gap-x-4">
-        <img src={'https://images.unsplash.com/photo-1519244703995-f4e0f30006d5?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'} alt="" className="h-10 w-10 rounded-full bg-gray-50" />
-        <div className="text-sm leading-6">
-            <p className="font-semibold text-gray-900">
-            <a href={'#'}>
-                <span className="absolute inset-0" />
-                {'Michael Foster'}
-            </a>
-            </p>
-            <p className="text-gray-600">{'Co-Founder / CTO'}</p>
-        </div>
-        </div>
+        {
+            isLoadingEmpresa || !empresa ? <div className="relative mt-8 flex items-center gap-x-4 w-[100%]">
+            <div className="animate-pulse flex space-x-4 w-[100%]">
+              <div className="rounded-full bg-slate-200 h-10 w-10"></div>
+              <div className="flex-1 space-y-6 py-1">
+                <div className="h-2 bg-slate-200 rounded"></div>
+                <div className="space-y-3">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="h-2 bg-slate-200 rounded col-span-2"></div>
+                    <div className="h-2 bg-slate-200 rounded col-span-1"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          : <div className="relative mt-8 flex items-center gap-x-4">
+                <img src={empresa.foto} alt="" className="h-10 w-10 rounded-full bg-gray-50" />
+                <div className="text-sm leading-6">
+                    <p className="font-semibold text-gray-900">
+                    <a href={'#'}>
+                        <span className="absolute inset-0" />
+                        {empresa.nome}
+                    </a>
+                    </p>
+                    <p className="text-gray-600">{empresa.email || empresa.telefone}</p>
+                </div>
+            </div>
+        }
+        
     </animated.article>
 }
 export default PropertyCard
