@@ -6,6 +6,18 @@ export const imovelRouter = createTRPCRouter({
         if (!input.imovelId) {
             throw new Error('No property provided')
         }
+        if (input.limit === 1) {
+            return await ctx.prisma.fotoImovel.findFirst({
+                where: {
+                    imovelId: input.imovelId,
+                    isAtivo: true
+                },
+                take: input.limit,
+                orderBy: {
+                    isPrincipal: 'desc'
+                }
+            })
+        }
         return await ctx.prisma.fotoImovel.findMany({
             where: {
                 imovelId: input.imovelId,

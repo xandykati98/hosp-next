@@ -1,4 +1,4 @@
-import { Imovel } from "@prisma/client"
+import { FotoImovel, Imovel } from "@prisma/client"
 import { useInView, animated } from "@react-spring/web"
 import { api } from "~/utils/api"
 
@@ -15,15 +15,17 @@ const PropertyCard = ({ property }: { property: Imovel }) => {
         })
     )
 
-    const { data: fotos, isLoading: isLoadingFotos } = api.imovel.getPropertyPhotos.useQuery({ imovelId: property.id, limit: 1 })
+    const { data: foto, isLoading: isLoadingFotos } = api.imovel.getPropertyPhotos.useQuery({ imovelId: property.id, limit: 1 })
     const { data: empresa, isLoading: isLoadingEmpresa } = api.empresa.getEmpresaById.useQuery({ id: property.empresaId })
+    
+    const uniqueFoto = foto as FotoImovel;
 
     return <animated.article ref={ref} style={springs} key={property.id} className="flex max-w-xl flex-col items-start justify-between pb-4">
         {
-            isLoadingFotos || !fotos ? <a href={'#'} className="w-[100%] h-64 mb-4 rounded-md bg-gray-500 animate-pulse"></a>
+            isLoadingFotos || !uniqueFoto ? <a href={'#'} className="w-[100%] h-64 mb-4 rounded-md bg-gray-500 animate-pulse"></a>
             : <a href={'#'} className="w-[100%] h-64 mb-4 rounded-md">
                 <div 
-                style={{ backgroundImage: `url(${fotos[0]?.url})` }}
+                style={{ backgroundImage: `url(${uniqueFoto.url})` }}
                 className={`rounded-md w-[100%] h-64 bg-cover shadow-md ring-1 ring-gray-900/10 hover:ring-gray-900/20`}>
                     
                 </div>
