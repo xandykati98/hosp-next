@@ -22,11 +22,11 @@ const PropertyCard = ({ property }: { property: Imovel }) => {
 
     return <animated.article ref={ref} style={springs} key={property.id} className="flex max-w-xl flex-col items-start justify-between pb-4">
         {
-            isLoadingFotos || !uniqueFoto ? <a href={'#'} className="w-[100%] h-64 mb-4 rounded-md bg-gray-500 animate-pulse"></a>
-            : <a href={'#'} className="w-[100%] h-64 mb-4 rounded-md">
+            isLoadingFotos || !uniqueFoto ? <a href={'#'} className="w-full h-64 mb-4 rounded-md bg-gray-500 animate-pulse"></a>
+            : <a href={'#'} className="w-full h-64 mb-4 rounded-md">
                 <div 
                 style={{ backgroundImage: `url(${uniqueFoto.url})` }}
-                className={`rounded-md w-[100%] h-64 bg-cover shadow-md ring-1 ring-gray-900/10 hover:ring-gray-900/20`}>
+                className={`rounded-md w-full h-64 bg-cover shadow-md ring-1 ring-gray-900/10 hover:ring-gray-900/20`}>
                     
                 </div>
             </a>
@@ -53,8 +53,8 @@ const PropertyCard = ({ property }: { property: Imovel }) => {
         <p className="mt-5 line-clamp-3 text-sm leading-6 text-gray-600">{property.descricao}</p>
         </div>
         {
-            isLoadingEmpresa || !empresa ? <div className="relative mt-8 flex items-center gap-x-4 w-[100%]">
-            <div className="animate-pulse flex space-x-4 w-[100%]">
+            isLoadingEmpresa || !empresa ? <div className="relative mt-8 flex items-center gap-x-4 w-full">
+            <div className="animate-pulse flex space-x-4 w-full">
               <div className="rounded-full bg-slate-200 h-10 w-10"></div>
               <div className="flex-1 space-y-6 py-1">
                 <div className="h-2 bg-slate-200 rounded"></div>

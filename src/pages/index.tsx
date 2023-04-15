@@ -1,4 +1,5 @@
 import { useInView, animated } from "@react-spring/web"
+import Link from "next/link"
 import Empresas from "~/components/empresas"
 import SomeProperties from "~/components/property.some"
 
@@ -75,12 +76,12 @@ export default function Home() {
                 Descubra a casa dos seus sonhos com a nossa seleção de imóveis de alta qualidade, que combinam conforto, elegância e segurança
               </p>
               <div className="mt-10 flex items-center justify-center gap-x-6">
-                <a
-                  href="#"
+                <Link
+                  href="/busca"
                   className="active:ring-2 ring-primary-400 rounded-md bg-primary-600 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600"
                 >
                   Começar sua busca
-                </a>
+                </Link>
                 <a href="#" className="text-sm font-semibold leading-6 text-gray-900">
                   Saiba mais <span aria-hidden="true">→</span>
                 </a>
