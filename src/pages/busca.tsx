@@ -46,8 +46,8 @@ const Busca = () => {
             <div className="bg-gray-100 text-gray-600 flex flex-col items-center justify-center rounded-md py-4 px-6">
                 <div className="mb-2">O que você precisa?</div>
                 <div className="pointer-events-auto w-full justify-center flex divide-x divide-slate-400/20 rounded-md bg-white text-[1.0125rem] font-medium leading-5 text-slate-700 shadow-sm ring-1 ring-slate-700/10">
-                    <div onClick={() => setTransacao('Comprar')} className={`${transacao === 'Comprar' ? 'bg-primary-600 hover:bg-primary-700 text-gray-50 hover:text-gray-50' : ''} select-none rounded-r-none text-center rounded-md ring-primary-200 w-full px-6 py-3 cursor-pointer hover:bg-slate-50 hover:text-slate-900 hover:ring-2 `}>Comprar</div>
-                    <div onClick={() => setTransacao('Alugar')} className={`${transacao === 'Alugar' ? 'bg-primary-600 hover:bg-primary-700 text-gray-50 hover:text-gray-50' : ''} select-none rounded-l-none text-center rounded-md ring-primary-200 w-full px-6 py-3 cursor-pointer hover:bg-slate-50 hover:text-slate-900 hover:ring-2`}>Alugar</div>
+                    <div onClick={() => setTransacao('Comprar')} className={`${transacao === 'Comprar' ? 'bg-primary-600 hover:bg-primary-700 text-gray-50 hover:text-gray-50' : 'hover:bg-slate-50 hover:text-slate-900'} select-none rounded-r-none text-center rounded-md ring-primary-200 w-full px-6 py-3 cursor-pointer hover:ring-2 `}>Comprar</div>
+                    <div onClick={() => setTransacao('Alugar')} className={`${transacao === 'Alugar' ? 'bg-primary-600 hover:bg-primary-700 text-gray-50 hover:text-gray-50' : 'hover:bg-slate-50 hover:text-slate-900'} select-none rounded-l-none text-center rounded-md ring-primary-200 w-full px-6 py-3 cursor-pointer hover:ring-2`}>Alugar</div>
                 </div>
                 <div className="bg-gray-200 h-[1px] w-full my-6"></div>
                 <div className="mb-2">Qual tipo?</div>
@@ -109,10 +109,9 @@ function Tipos() {
         >
           <Menu.Items className="absolute right-0 z-10 mt-2 w-72 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
             <div className="py-1">
-                <div>
+                <div onClick={toggleAll} className="cursor-pointer hover:bg-gray-100">
                     <a className="text-gray-700 px-4 py-2 text-md flex font-medium align-center">
                         <SwitchComp
-                        toggleEnabled={toggleAll}
                         value={BuscaParams.availableTipos.length === Object.keys(BuscaParams.tipos).length}/>
                         <span className="ml-2">Todos os imóveis</span>
                         
@@ -122,14 +121,14 @@ function Tipos() {
             <div className="py-1">
                 {
                     BuscaParams?.availableTipos?.map(tipo => {
-                        return <div key={tipo}>
-                            <a className="text-gray-700 px-4 py-2 text-md flex font-medium align-center">
+                        return <div key={tipo} className="cursor-pointer hover:bg-gray-100" onClick={() => BuscaParams.setTipos({ ...BuscaParams.tipos, [tipo]: !BuscaParams.tipos[tipo] })}>
+                            <span className="text-gray-700 px-4 py-2 text-md flex font-medium align-center">
                                 <SwitchComp 
                                 value={!!BuscaParams.tipos[tipo]} 
-                                toggleEnabled={() => BuscaParams.setTipos({ ...BuscaParams.tipos, [tipo]: !BuscaParams.tipos[tipo] })}/>
-                                <span className="ml-2">{tipo}</span>
+                                />
+                                <span className="ml-2">{TiposRelate[tipo as 'Residential / Apartment']}</span>
                                 
-                            </a>
+                            </span>
                         </div>
                     })
                 }
@@ -140,7 +139,7 @@ function Tipos() {
     )
 }
 
-function SwitchComp({ value, toggleEnabled }: { value: boolean, toggleEnabled: () => void }) {
+function SwitchComp({ value, toggleEnabled = () => {} }: { value: boolean, toggleEnabled?: () => void }) {
   
     return (
         <Switch
