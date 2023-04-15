@@ -3,6 +3,7 @@ import { Menu, Transition } from '@headlessui/react'
 import { ChevronDownIcon } from '@heroicons/react/20/solid'
 import { Switch } from '@headlessui/react'
 import { api } from "~/utils/api"
+import { Imovel } from "@prisma/client"
 
 function classNames(...classes:string[]) {
     return classes.filter(Boolean).join(' ')
@@ -24,7 +25,7 @@ const Busca = () => {
     const [ transacao, setTransacao ] = useState('Comprar')
     const [ tipos, setTipos ] = useState({})
     const { data:tiposDistinct, isLoading: loadingTipos } = api.busca.getTipos.useQuery()
-
+    const { data:imoveisQuery, isLoading: loadingImoveis} = api.busca.getImoveisPage.useQuery({ page: 1 })
     useEffect(() => {
         if (tiposDistinct) {
             const activate: { [tipo:string]: boolean } = {}
@@ -34,7 +35,8 @@ const Busca = () => {
             setTipos(activate)
         }
     }, [tiposDistinct])
-    console.log({tiposDistinct, tipos})
+    
+
     // grid-template-columns: 296px 1fr
     return <BuscaContext.Provider value={{
         transacao, setTransacao,
@@ -53,12 +55,39 @@ const Busca = () => {
                 <div className="mb-2">Qual tipo?</div>
                 <Tipos/>
             </div>
-            <div>
-                2
+            <div className="ml-6 flex flex-col" >
+                {
+                    false &&
+                    <div className="flex w-full gap-x-4 relative" >
+                        <input
+                            id="searchBox"
+                            name="searchBox"
+                            type="text"
+                            className="min-w-0 opacity-50 flex-auto rounded-md border-[1px] bg-white/5 px-3.5 py-2 text-slate-900 shadow-sm ring-2 ring-white/10 focus:ring-2 focus:ring-primary-500 sm:text-sm sm:leading-6 outline-none"
+                            placeholder="Digite uma cidade, bairro, rua ou estado (BETA)"
+                            disabled
+                        />
+                        <button
+                            type="submit"
+                            className="flex-none rounded-md bg-primary-500 px-3.5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-primary-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-500"
+                        >
+                            Busque
+                        </button>
+                    </div>
+                }
+                <div className="flex flex-col">
+                    {imoveisQuery?.map(imovel => <ItemImovel key={imovel.id} imovel={imovel} />)}
+                </div>
             </div>
             <div>3</div>
         </div>
     </BuscaContext.Provider>
+}
+
+const ItemImovel = ({ imovel }:{ imovel: Imovel }) => {
+    return <div className="rounded-md shadow-sm bg-white mb-6 flex cursor-pointer">
+        {imovel.titulo}
+    </div>
 }
 
 const TiposRelate = {
