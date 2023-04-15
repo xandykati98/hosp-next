@@ -42,9 +42,9 @@ const Busca = () => {
 
     const tiposActives: string[] = Object.entries(tipos).filter(([key, value]) => value).map(([key, value]) => key)
 
-    const { data: imoveisRes, isLoading: loadingImoveis } = api.busca.getImoveisPage.useQuery({ page, tipos: tiposActives })
-    const imoveis = imoveisRes?.imoveis || []
-    const { count } = imoveisRes || {}
+    const { data: imoveis, isLoading: loadingImoveis } = api.busca.getImoveisPage.useQuery({ page, tipos: tiposActives })
+    const { data: count, isLoading: loadingCount } = api.busca.getImoveisCount.useQuery({ tipos: tiposActives })
+
     useEffect(() => {
         if (tiposDistinct) {
             const activate: { [tipo:string]: boolean } = {}
@@ -55,6 +55,7 @@ const Busca = () => {
         }
     }, [tiposDistinct])
     
+    const pageSize = 25;
 
     // grid-template-columns: 296px 1fr
     return <BuscaContext.Provider value={{
@@ -74,7 +75,7 @@ const Busca = () => {
                 <div className="mb-2">Qual tipo?</div>
                 <Tipos/>
             </div>
-            <div className="ml-6 flex flex-col" >
+            <div className="ml-6 flex flex-col mb-6" >
                 {
                     false &&
                     <div className="flex w-full gap-x-4 relative" >
@@ -94,67 +95,94 @@ const Busca = () => {
                         </button>
                     </div>
                 }
-                <h3 className="col-start-1 row-start-2 max-w-[36rem] text-4xl font-extrabold tracking-tight text-slate-900 sm:text-4xl xl:max-w-[43.5rem]">{loadingImoveis ? 'Carregando busca...' : `${format(count || 0)} Imóveis encontrados`}</h3>
+                <h3 className="col-start-1 row-start-2 max-w-[36rem] text-4xl font-extrabold tracking-tight text-slate-900 sm:text-4xl xl:max-w-[43.5rem]">{loadingCount ? 'Carregando busca...' : `${format(count || 0)} Imóveis encontrados`}</h3>
                 <p className="col-start-1 row-start-3 my-4 max-w-lg text-lg text-slate-700">Altere as configurações de busca para achar imóveis diferentes</p>
                 <div className="flex flex-col">
                     {imoveis?.map(imovel => <ItemImovel key={imovel.id} imovel={imovel} />)}
                     <div>
-                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                        <a
-                        href="#"
-                        className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                        >
-                        <span className="sr-only">Previous</span>
-                            <ChevronLeftIcon className="h-5 w-5" aria-hidden="true" />
+                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm overflow-hidden" aria-label="Pagination">
+                            {
+                                page > 1 && <a
+                            href="#"
+                            className="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                            >
+                            <span className="sr-only">Anterior</span>
+                            <ChevronLeftIcon onClick={() => setPage(page-1)} className="h-5 w-5" aria-hidden="true" />
                             </a>
+                            }
                             {/* Current: "z-10 bg-indigo-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600", Default: "text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:outline-offset-0" */}
-                            <a
-                            href="#"
-                            aria-current="page"
-                            className="relative z-10 inline-flex items-center bg-indigo-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-                            >
-                            1
-                            </a>
-                            <a
-                            href="#"
-                            className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                            >
-                            2
-                            </a>
-                            <a
-                            href="#"
-                            className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
-                            >
-                            3
-                            </a>
-                            <span className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0">
-                            ...
+                            
+                            {
+                                page-3 > 0 && <a
+                                href="#"
+                                onClick={() => setPage(page-3)}
+                                className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
+                                >
+                                {page-3}
+                                </a>
+                            }
+                            
+                            {
+                                page-2 > 0 && <a
+                                href="#"
+                                onClick={() => setPage(page-2)}
+                                className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
+                                >
+                                {page-2}
+                                </a>
+                            }
+                            {
+                                page-1 > 0 && <a
+                                href="#"
+                                onClick={() => setPage(page-1)}
+                                className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
+                                >
+                                {page-1}
+                                </a>
+                            }
+                            
+                            <span className="relative z-10 inline-flex items-center bg-primary-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-600">
+                            {page}
                             </span>
-                            <a
-                            href="#"
-                            className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
-                            >
-                            8
-                            </a>
-                            <a
-                            href="#"
-                            className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                            >
-                            9
-                            </a>
-                            <a
-                            href="#"
-                            className="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                            >
-                            10
-                            </a>
-                            <a
-                            href="#"
-                            className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
-                            >
-                            <span className="sr-only">Next</span>
-                            <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
-                            </a>
+                            
+                            {
+                                count && (page+1 <= Math.ceil(count/pageSize)) && <a
+                                href="#"
+                                onClick={() => setPage(page+1)}
+                                className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
+                                >
+                                {page+1}
+                                </a>
+                            }
+                            {
+                                count && (page+2 <= Math.ceil(count/pageSize)) && <a
+                                href="#"
+                                onClick={() => setPage(page+2)}
+                                className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
+                                >
+                                {page+2}
+                                </a>
+                            }
+                            {
+                                count && (page+3 <= Math.ceil(count/pageSize)) && <a
+                                href="#"
+                                onClick={() => setPage(page+3)}
+                                className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
+                                >
+                                {page+3}
+                                </a>
+                            }
+                            {
+                                count && (page+1 <= Math.ceil(count/pageSize)) && <a
+                                href="#"
+                                onClick={() => setPage(page+1)}
+                                className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
+                                >
+                                <span className="sr-only">Próxima</span>
+                                <ChevronRightIcon className="h-5 w-5" aria-hidden="true" />
+                                </a>
+                            }
+                            
                         </nav>
                     </div>
                 </div>
@@ -242,7 +270,7 @@ const ItemImovel = ({ imovel }:{ imovel: Imovel & { fotos: { [url:string]: strin
         { foto?.url ? <div 
                 style={{ backgroundImage: `url(${foto.url})` }}
                 className={`flex flex-col w-64 h-[100%] md:rounded-none bg-cover`}></div> : null }
-        <div className={`flex flex-col ${!foto?.url ? 'w-[100%]': ''} w-[calc(100%_-_256px)] px-6 py-4`}>
+        <div className={`flex flex-col ${!foto?.url ? 'w-[100%]': 'w-[calc(100%_-_256px)]'} px-6 py-4`}>
             <div className="text-3xl text-slate-900 font-bold tracking-tight">
                 {preco}
             </div>

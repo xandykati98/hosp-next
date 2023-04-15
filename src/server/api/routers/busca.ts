@@ -1,8 +1,26 @@
 import { createTRPCRouter, publicProcedure, privateProcedure } from '../trpc'
 import { z } from 'zod'
 
+const getImoveisInput = {
+    tipos: z.array(z.string())
+}
 export const buscaRouter = createTRPCRouter({
-    getImoveisPage: publicProcedure.input(z.object({ page: z.number(), tipos: z.array(z.string()) })).query(async ({ ctx, input }) => {
+    getImoveisCount: publicProcedure.input(z.object(getImoveisInput)).query(async ({ ctx, input }) => {
+        const where: {
+            tipo?: any
+        } = {
+
+        }
+
+        if (input.tipos.length > 0) {
+            where.tipo = {
+                in: input.tipos
+            }
+        }
+
+        return await ctx.prisma.imovel.count({ where })
+    }),
+    getImoveisPage: publicProcedure.input(z.object({ page: z.number(), ...getImoveisInput })).query(async ({ ctx, input }) => {
         if (!input.page) {
             throw new Error('No page provided')
         }
@@ -19,9 +37,9 @@ export const buscaRouter = createTRPCRouter({
             }
         }
 
-        const res = await ctx.prisma.imovel.findMany({
-            skip: (input.page - 1) * 50,
-            take: 50,
+        return await ctx.prisma.imovel.findMany({
+            skip: (input.page - 1) * 25,
+            take: 25,
             orderBy: {
                 isPro: 'desc'
             },
@@ -41,11 +59,6 @@ export const buscaRouter = createTRPCRouter({
                 }
             }
         })
-        const count = await ctx.prisma.imovel.count({ where })
-        return {
-            count,
-            imoveis: res,
-        }
     }),
     getTipos: publicProcedure.query(async ({ ctx, input }) => {
         return [
