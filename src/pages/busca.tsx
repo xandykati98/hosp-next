@@ -5,6 +5,8 @@ import { Switch } from '@headlessui/react'
 import { api } from "~/utils/api"
 import { Imovel } from "@prisma/client"
 import Link from "next/link"
+import { animated, useInView } from "@react-spring/web"
+import Mapa from '~/components/busca.map'
 
 function classNames(...classes:string[]) {
     return classes.filter(Boolean).join(' ')
@@ -39,6 +41,7 @@ const Busca = () => {
     const { data:tiposDistinct, isLoading: loadingTipos } = api.busca.getTipos.useQuery()
     
     const [page, setPage] = useState(1)
+    const [mapaActive, setMapaActive] = useState(false)
 
     const tiposActives: string[] = Object.entries(tipos).filter(([key, value]) => value).map(([key, value]) => key)
 
@@ -57,7 +60,6 @@ const Busca = () => {
     
     const pageSize = 25;
 
-    // grid-template-columns: 296px 1fr
     return <BuscaContext.Provider value={{
         transacao, setTransacao,
         loadingTipos,
@@ -65,15 +67,30 @@ const Busca = () => {
         availableTipos: (tiposDistinct || []).map(({ tipo }: { tipo: string }) => tipo)
     }}>
         <div className="sm:grid-cols-[296px_1fr] relative mx-auto mt-16 grid w-full max-w-7xl px-4 sm:mt-20 sm:px-6 lg:px-8 xl:mt-32">
-            <div className="self-baseline bg-gray-100 text-gray-600 flex flex-col items-baseline rounded-md py-4 px-6">
-                <div className="mb-2">O que você precisa?</div>
-                <div className="pointer-events-auto w-full justify-center flex divide-x divide-slate-400/20 rounded-md bg-white text-[1.0125rem] font-medium leading-5 text-slate-700 shadow-sm ring-1 ring-slate-700/10">
-                    <div onClick={() => setTransacao('Comprar')} className={`${transacao === 'Comprar' ? 'bg-primary-600 hover:bg-primary-700 text-gray-50 hover:text-gray-50' : 'hover:bg-slate-50 hover:text-slate-900'} select-none rounded-r-none text-center rounded-md ring-primary-200 w-full px-6 py-3 cursor-pointer hover:ring-2 `}>Comprar</div>
-                    <div onClick={() => setTransacao('Alugar')} className={`${transacao === 'Alugar' ? 'bg-primary-600 hover:bg-primary-700 text-gray-50 hover:text-gray-50' : 'hover:bg-slate-50 hover:text-slate-900'} select-none rounded-l-none text-center rounded-md ring-primary-200 w-full px-6 py-3 cursor-pointer hover:ring-2`}>Alugar</div>
+            <div className="self-baseline">
+                <button onClick={() => setMapaActive(!mapaActive)} className="flex flex-row justify-center bg-primary-50 hover:bg-primary-200 text-primary-600 w-full rounded-md py-4 px-4 mb-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 mr-2">
+                        {
+                            mapaActive ? 
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                            :
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 6.75V15m6-6v8.25m.503 3.498l4.875-2.437c.381-.19.622-.58.622-1.006V4.82c0-.836-.88-1.38-1.628-1.006l-3.869 1.934c-.317.159-.69.159-1.006 0L9.503 3.252a1.125 1.125 0 00-1.006 0L3.622 5.689C3.24 5.88 3 6.27 3 6.695V19.18c0 .836.88 1.38 1.628 1.006l3.869-1.934c.317-.159.69-.159 1.006 0l4.994 2.497c.317.158.69.158 1.006 0z" />
+                        }
+                    </svg>
+                    <span className="font-semibold">
+                        {mapaActive ? 'Fechar mapa': 'Buscar pelo mapa'}
+                    </span>
+                </button>
+                <div className="bg-gray-100 text-gray-600 flex flex-col items-baseline rounded-md py-4 px-6">
+                    <div className="mb-2">O que você precisa?</div>
+                    <div className="pointer-events-auto w-full justify-center flex divide-x divide-slate-400/20 rounded-md bg-white text-[1.0125rem] font-medium leading-5 text-slate-700 shadow-sm ring-1 ring-slate-700/10">
+                        <div onClick={() => setTransacao('Comprar')} className={`${transacao === 'Comprar' ? 'bg-primary-600 hover:bg-primary-700 text-gray-50 hover:text-gray-50' : 'hover:bg-slate-50 hover:text-slate-900'} select-none rounded-r-none text-center rounded-md ring-primary-200 w-full px-6 py-3 cursor-pointer hover:ring-2 `}>Comprar</div>
+                        <div onClick={() => setTransacao('Alugar')} className={`${transacao === 'Alugar' ? 'bg-primary-600 hover:bg-primary-700 text-gray-50 hover:text-gray-50' : 'hover:bg-slate-50 hover:text-slate-900'} select-none rounded-l-none text-center rounded-md ring-primary-200 w-full px-6 py-3 cursor-pointer hover:ring-2`}>Alugar</div>
+                    </div>
+                    <div className="bg-gray-200 h-[1px] w-full my-3 mt-5"></div>
+                    <div className="mb-2">Qual tipo?</div>
+                    <Tipos/>
                 </div>
-                <div className="bg-gray-200 h-[1px] w-full my-3 mt-5"></div>
-                <div className="mb-2">Qual tipo?</div>
-                <Tipos/>
             </div>
             <div className="ml-6 flex flex-col mb-6" >
                 {
@@ -95,9 +112,15 @@ const Busca = () => {
                         </button>
                     </div>
                 }
+                {
+                    mapaActive && <div className="w-full h-[80vh] sm:h-[50vh] bg-gray-50 rounded-md mb-2">
+                        <Mapa/>
+                    </div>
+                }
                 <h3 className="col-start-1 row-start-2 max-w-[36rem] text-4xl font-extrabold tracking-tight text-slate-900 sm:text-4xl xl:max-w-[43.5rem]">{loadingCount ? 'Carregando busca...' : `${format(count || 0)} Imóveis encontrados`}</h3>
                 <p className="col-start-1 row-start-3 my-4 max-w-lg text-lg text-slate-700">Altere as configurações de busca para achar imóveis diferentes</p>
                 <div className="flex flex-col">
+                    
                     {imoveis?.map(imovel => <ItemImovel key={imovel.id} imovel={imovel} />)}
                     {
                         !loadingImoveis && <div>
@@ -196,24 +219,24 @@ const Busca = () => {
 const Icons = {
     'Banheiros': () => {
         return <svg className="mr-2.5 h-5 w-5 flex-none" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M6 20L5 21M18 20L19 21" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M3 12V13C3 16.2998 3 17.9497 4.02513 18.9749C5.05025 20 6.70017 20 10 20H14C17.2998 20 18.9497 20 19.9749 18.9749C21 17.9497 21 16.2998 21 13V12" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 12H22" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M4 12V5.5234C4 4.12977 5.12977 3 6.5234 3C7.64166 3 8.62654 3.73598 8.94339 4.80841L9 5" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M8 6L10.5 4" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M6 20L5 21M18 20L19 21" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M3 12V13C3 16.2998 3 17.9497 4.02513 18.9749C5.05025 20 6.70017 20 10 20H14C17.2998 20 18.9497 20 19.9749 18.9749C21 17.9497 21 16.2998 21 13V12" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 12H22" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M4 12V5.5234C4 4.12977 5.12977 3 6.5234 3C7.64166 3 8.62654 3.73598 8.94339 4.80841L9 5" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M8 6L10.5 4" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
     },
     'Vagas': () => {
         return <svg className="mr-2.5 h-5 w-5 flex-none" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M2.5 12L4.5 13" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M21.5 12.5L19.5 13" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8 17.5L8.24567 16.8858C8.61101 15.9725 8.79368 15.5158 9.17461 15.2579C9.55553 15 10.0474 15 11.0311 15H12.9689C13.9526 15 14.4445 15 14.8254 15.2579C15.2063 15.5158 15.389 15.9725 15.7543 16.8858L16 17.5" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M2 17V19.882C2 20.2607 2.24075 20.607 2.62188 20.7764C2.86918 20.8863 3.10538 21 3.39058 21H5.10942C5.39462 21 5.63082 20.8863 5.87812 20.7764C6.25925 20.607 6.5 20.2607 6.5 19.882V18" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M17.5 18V19.882C17.5 20.2607 17.7408 20.607 18.1219 20.7764C18.3692 20.8863 18.6054 21 18.8906 21H20.6094C20.8946 21 21.1308 20.8863 21.3781 20.7764C21.7592 20.607 22 20.2607 22 19.882V17" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M20 8.5L21 8" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4 8.5L3 8" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M4.5 9L5.5883 5.73509C6.02832 4.41505 6.24832 3.75503 6.7721 3.37752C7.29587 3 7.99159 3 9.38304 3H14.617C16.0084 3 16.7041 3 17.2279 3.37752C17.7517 3.75503 17.9717 4.41505 18.4117 5.73509L19.5 9" stroke="#94a3b8" stroke-width="1.5" stroke-linejoin="round"/>
-            <path d="M4.5 9H19.5C20.4572 10.0135 22 11.4249 22 12.9996V16.4702C22 17.0407 21.6205 17.5208 21.1168 17.5875L18 18H6L2.88316 17.5875C2.37955 17.5208 2 17.0407 2 16.4702V12.9996C2 11.4249 3.54279 10.0135 4.5 9Z" stroke="#94a3b8" stroke-width="1.5" stroke-linejoin="round"/>
+            <path d="M2.5 12L4.5 13" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M21.5 12.5L19.5 13" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8 17.5L8.24567 16.8858C8.61101 15.9725 8.79368 15.5158 9.17461 15.2579C9.55553 15 10.0474 15 11.0311 15H12.9689C13.9526 15 14.4445 15 14.8254 15.2579C15.2063 15.5158 15.389 15.9725 15.7543 16.8858L16 17.5" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M2 17V19.882C2 20.2607 2.24075 20.607 2.62188 20.7764C2.86918 20.8863 3.10538 21 3.39058 21H5.10942C5.39462 21 5.63082 20.8863 5.87812 20.7764C6.25925 20.607 6.5 20.2607 6.5 19.882V18" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M17.5 18V19.882C17.5 20.2607 17.7408 20.607 18.1219 20.7764C18.3692 20.8863 18.6054 21 18.8906 21H20.6094C20.8946 21 21.1308 20.8863 21.3781 20.7764C21.7592 20.607 22 20.2607 22 19.882V17" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M20 8.5L21 8" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M4 8.5L3 8" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M4.5 9L5.5883 5.73509C6.02832 4.41505 6.24832 3.75503 6.7721 3.37752C7.29587 3 7.99159 3 9.38304 3H14.617C16.0084 3 16.7041 3 17.2279 3.37752C17.7517 3.75503 17.9717 4.41505 18.4117 5.73509L19.5 9" stroke="#94a3b8" strokeWidth="1.5" strokeLinejoin="round"/>
+            <path d="M4.5 9H19.5C20.4572 10.0135 22 11.4249 22 12.9996V16.4702C22 17.0407 21.6205 17.5208 21.1168 17.5875L18 18H6L2.88316 17.5875C2.37955 17.5208 2 17.0407 2 16.4702V12.9996C2 11.4249 3.54279 10.0135 4.5 9Z" stroke="#94a3b8" strokeWidth="1.5" strokeLinejoin="round"/>
         </svg>
     },
     'Area': () => {
@@ -222,27 +245,27 @@ const Icons = {
             <path d="M2.96967 19.9697C2.67678 20.2626 2.67678 20.7374 2.96967 21.0303C3.26256 21.3232 3.73744 21.3232 4.03033 21.0303L2.96967 19.9697ZM10.5303 14.5303C10.8232 14.2374 10.8232 13.7626 10.5303 13.4697C10.2374 13.1768 9.76256 13.1768 9.46967 13.4697L10.5303 14.5303ZM9.46967 13.4697L2.96967 19.9697L4.03033 21.0303L10.5303 14.5303L9.46967 13.4697Z" fill="#94a3b8"/>
             <path d="M21.0303 4.03033C21.3232 3.73744 21.3232 3.26256 21.0303 2.96967C20.7374 2.67678 20.2626 2.67678 19.9697 2.96967L21.0303 4.03033ZM13.4697 9.46967C13.1768 9.76256 13.1768 10.2374 13.4697 10.5303C13.7626 10.8232 14.2374 10.8232 14.5303 10.5303L13.4697 9.46967ZM14.5303 10.5303L21.0303 4.03033L19.9697 2.96967L13.4697 9.46967L14.5303 10.5303Z" fill="#94a3b8"/>
             <path d="M21.0303 19.9697C21.3232 20.2626 21.3232 20.7374 21.0303 21.0303C20.7374 21.3232 20.2626 21.3232 19.9697 21.0303L21.0303 19.9697ZM13.4697 14.5303C13.1768 14.2374 13.1768 13.7626 13.4697 13.4697C13.7626 13.1768 14.2374 13.1768 14.5303 13.4697L13.4697 14.5303ZM14.5303 13.4697L21.0303 19.9697L19.9697 21.0303L13.4697 14.5303L14.5303 13.4697Z" fill="#94a3b8"/>
-            <path d="M8 3.09779C8 3.09779 4.03374 2.74194 3.38783 3.38785C2.74191 4.03375 3.09783 8 3.09783 8" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M8 20.9022C8 20.9022 4.03374 21.2581 3.38783 20.6122C2.74191 19.9662 3.09783 16 3.09783 16" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M16 3.09779C16 3.09779 19.9663 2.74194 20.6122 3.38785C21.2581 4.03375 20.9022 8 20.9022 8" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M16 20.9022C16 20.9022 19.9663 21.2581 20.6122 20.6122C21.2581 19.9662 20.9022 16 20.9022 16" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M8 3.09779C8 3.09779 4.03374 2.74194 3.38783 3.38785C2.74191 4.03375 3.09783 8 3.09783 8" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M8 20.9022C8 20.9022 4.03374 21.2581 3.38783 20.6122C2.74191 19.9662 3.09783 16 3.09783 16" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M16 3.09779C16 3.09779 19.9663 2.74194 20.6122 3.38785C21.2581 4.03375 20.9022 8 20.9022 8" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M16 20.9022C16 20.9022 19.9663 21.2581 20.6122 20.6122C21.2581 19.9662 20.9022 16 20.9022 16" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
         </svg>
     },
     'Quartos': () => {
         return <svg className="mr-2.5 h-5 w-5 flex-none" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M22 17.5H2" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M22 21V16C22 14.1144 22 13.1716 21.4142 12.5858C20.8284 12 19.8856 12 18 12H6C4.11438 12 3.17157 12 2.58579 12.5858C2 13.1716 2 14.1144 2 16V21" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M11 12V10.2134C11 9.83272 10.9428 9.70541 10.6497 9.55538C10.0395 9.24292 9.29865 9 8.5 9C7.70135 9 6.96055 9.24292 6.35025 9.55538C6.05721 9.70541 6 9.83272 6 10.2134L6 12" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M18 12V10.2134C18 9.83272 17.9428 9.70541 17.6497 9.55538C17.0395 9.24292 16.2987 9 15.5 9C14.7013 9 13.9605 9.24292 13.3503 9.55538C13.0572 9.70541 13 9.83272 13 10.2134L13 12" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M21 12V7.36057C21 6.66893 21 6.32311 20.8079 5.99653C20.6157 5.66995 20.342 5.50091 19.7944 5.16283C17.5869 3.79978 14.8993 3 12 3C9.10067 3 6.41314 3.79978 4.20558 5.16283C3.65804 5.50091 3.38427 5.66995 3.19213 5.99653C3 6.32311 3 6.66893 3 7.36057V12" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M22 17.5H2" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M22 21V16C22 14.1144 22 13.1716 21.4142 12.5858C20.8284 12 19.8856 12 18 12H6C4.11438 12 3.17157 12 2.58579 12.5858C2 13.1716 2 14.1144 2 16V21" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M11 12V10.2134C11 9.83272 10.9428 9.70541 10.6497 9.55538C10.0395 9.24292 9.29865 9 8.5 9C7.70135 9 6.96055 9.24292 6.35025 9.55538C6.05721 9.70541 6 9.83272 6 10.2134L6 12" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M18 12V10.2134C18 9.83272 17.9428 9.70541 17.6497 9.55538C17.0395 9.24292 16.2987 9 15.5 9C14.7013 9 13.9605 9.24292 13.3503 9.55538C13.0572 9.70541 13 9.83272 13 10.2134L13 12" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
+            <path d="M21 12V7.36057C21 6.66893 21 6.32311 20.8079 5.99653C20.6157 5.66995 20.342 5.50091 19.7944 5.16283C17.5869 3.79978 14.8993 3 12 3C9.10067 3 6.41314 3.79978 4.20558 5.16283C3.65804 5.50091 3.38427 5.66995 3.19213 5.99653C3 6.32311 3 6.66893 3 7.36057V12" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>
     },
     'Suites': () => {
         return <svg className="mr-2.5 h-5 w-5 flex-none" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M22 17.5H2" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M22 21V16C22 14.1144 22 13.1716 21.4142 12.5858C20.8284 12 19.8856 12 18 12H6C4.11438 12 3.17157 12 2.58579 12.5858C2 13.1716 2 14.1144 2 16V21" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        <path d="M16 12V10.6178C16 10.1103 15.9085 9.94054 15.4396 9.7405C14.4631 9.32389 13.2778 9 12 9C10.7222 9 9.53688 9.32389 8.5604 9.7405C8.09154 9.94054 8 10.1103 8 10.6178L8 12" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
-        <path d="M20 12V7.36057C20 6.66893 20 6.32311 19.8292 5.99653C19.6584 5.66995 19.4151 5.50091 18.9284 5.16283C16.9661 3.79978 14.5772 3 12 3C9.42282 3 7.03391 3.79978 5.07163 5.16283C4.58492 5.50091 4.34157 5.66995 4.17079 5.99653C4 6.32311 4 6.66893 4 7.36057V12" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M22 17.5H2" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M22 21V16C22 14.1144 22 13.1716 21.4142 12.5858C20.8284 12 19.8856 12 18 12H6C4.11438 12 3.17157 12 2.58579 12.5858C2 13.1716 2 14.1144 2 16V21" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M16 12V10.6178C16 10.1103 15.9085 9.94054 15.4396 9.7405C14.4631 9.32389 13.2778 9 12 9C10.7222 9 9.53688 9.32389 8.5604 9.7405C8.09154 9.94054 8 10.1103 8 10.6178L8 12" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
+        <path d="M20 12V7.36057C20 6.66893 20 6.32311 19.8292 5.99653C19.6584 5.66995 19.4151 5.50091 18.9284 5.16283C16.9661 3.79978 14.5772 3 12 3C9.42282 3 7.03391 3.79978 5.07163 5.16283C4.58492 5.50091 4.34157 5.66995 4.17079 5.99653C4 6.32311 4 6.66893 4 7.36057V12" stroke="#94a3b8" strokeWidth="1.5" strokeLinecap="round"/>
         </svg>        
     }
 }
@@ -268,13 +291,26 @@ const ItemImovel = ({ imovel }:{ imovel: Imovel & { fotos: { [url:string]: strin
             {cidade}, {bairro}, {rua}
         </div>
     }
-    return <Link href={`/imovel/${imovel.empresaId}/${imovel.id}`} className="sm:grid-cols-[256px_1fr] hover:shadow-lg relative rounded-md border-[1px] border-gray-200 shadow-md bg-white mb-6 flex cursor-pointer overflow-hidden">
+    
+    const AnimatedLink= animated(Link)
+    const [ref, springs] = useInView(() => ({
+        from: { opacity: 0, transform: 'translateY(20px)' },
+        to: { opacity: 1, transform: 'translateY(0px)' },
+        delay: 250,
+    }))
+    return <AnimatedLink ref={ref} style={springs} href={`/imovel/${imovel.empresaId}/${imovel.id}`} className="sm:grid-cols-[256px_1fr] hover:shadow-lg relative rounded-md border-[1px] border-gray-200 shadow-md bg-white mb-6 flex cursor-pointer overflow-hidden">
         { foto?.url ? <div 
                 style={{ backgroundImage: `url(${foto.url})` }}
                 className={`flex flex-col w-64 h-[100%] md:rounded-none bg-cover`}></div> : null }
         <div className={`flex flex-col ${!foto?.url ? 'w-[100%]': 'w-[calc(100%_-_256px)]'} px-6 py-4`}>
-            <div className="text-3xl text-slate-900 font-bold tracking-tight">
-                {preco}
+            <div className=" tracking-tight flex flex-row justify-between">
+                <div className="text-3xl text-slate-900 font-bold">{preco}</div>
+                {
+                    imovel.isPro && <span className="sm:h-8 sm:text-[16px] box-border relative inline-flex items-center justify-center text-center no-underline leading-none whitespace-nowrap font-semibold rounded shrink-0 transition select-none overflow-hidden focus-ring bg-gray-800 hover:bg-gray-900 dark:bg-gray-50 border border-transparent text-gray-50 dark:text-gray-800 dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer hover:text-white h-4 py-1.5 px-2">
+                        Este imóvel é #pro
+                    </span>
+                }
+                
             </div>
             <div className="line-clamp-3 text-gray-600 my-1">
                 {imovel.descricao}
@@ -285,17 +321,20 @@ const ItemImovel = ({ imovel }:{ imovel: Imovel & { fotos: { [url:string]: strin
             <div className="flex flex-row">
                 <div className="flex flex-col gap-y-1 mt-2">
                     <div className="justify-between rounded-md shadow-sm ring-1 ring-slate-700/10 overflow-hidden w-fit flex-col flex">
-                        <div className="justify-between border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Quartos()}Quartos</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.quartos}</div></div>
-                        <div className="justify-between border-t-[1px] border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Suites()}Suítes</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.suites}</div></div>
-                        <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Vagas()}Vagas</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.vagas}</div></div>
-                        <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">
-                            {Icons.Banheiros()}
-                            Banheiros
-                            </div>
-                            <div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.banheiros}</div>
-                        </div>
+                        {!!imovel.quartos && <div className="justify-between border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Quartos()}Quartos</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.quartos}</div></div>}
+                        {!!imovel.suites && <div className="justify-between border-t-[1px] border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Suites()}Suítes</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.suites}</div></div>}
+                        {!!imovel.vagas && <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Vagas()}Vagas</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.vagas}</div></div>}
                         {
-                            imovel?.areaTotal ? <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Area()}Área</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.areaTotal as unknown as number}m²</div></div> : null
+                            !!imovel.banheiros &&
+                            <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">
+                                {Icons.Banheiros()}
+                                Banheiros
+                                </div>
+                                <div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.banheiros}</div>
+                            </div>
+                        }
+                        {
+                            !!imovel?.areaTotal && imovel?.areaTotal as unknown as string != '0' ? <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Area()}Área</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.areaTotal as unknown as number}m²</div></div> : null
                         }
                     </div>
                 </div>
@@ -334,7 +373,7 @@ const ItemImovel = ({ imovel }:{ imovel: Imovel & { fotos: { [url:string]: strin
                 </div>
             </div>
         </div>
-    </Link>
+    </AnimatedLink>
 }
 
 const TiposRelate = {

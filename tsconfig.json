@@ -28,6 +28,6 @@
     "**/*.tsx",
     "**/*.cjs",
     "**/*.mjs"
-  ],
+, "src/components/busca.map.jsx"  ],
   "exclude": ["node_modules"]
 }
