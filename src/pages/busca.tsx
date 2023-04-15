@@ -42,8 +42,8 @@ const Busca = () => {
 
     const tiposActives: string[] = Object.entries(tipos).filter(([key, value]) => value).map(([key, value]) => key)
 
-    const { data: imoveis, isLoading: loadingImoveis } = api.busca.getImoveisPage.useQuery({ page, tipos: tiposActives })
-    const { data: count, isLoading: loadingCount } = api.busca.getImoveisCount.useQuery({ tipos: tiposActives })
+    const { data: imoveis, isLoading: loadingImoveis } = api.busca.getImoveisPage.useQuery({ page, tipos: tiposActives, isVenda: transacao === 'Comprar', isLocacao: transacao === 'Alugar' })
+    const { data: count, isLoading: loadingCount } = api.busca.getImoveisCount.useQuery({ tipos: tiposActives, isVenda: transacao === 'Comprar', isLocacao: transacao === 'Alugar' })
 
     useEffect(() => {
         if (tiposDistinct) {
@@ -99,8 +99,9 @@ const Busca = () => {
                 <p className="col-start-1 row-start-3 my-4 max-w-lg text-lg text-slate-700">Altere as configurações de busca para achar imóveis diferentes</p>
                 <div className="flex flex-col">
                     {imoveis?.map(imovel => <ItemImovel key={imovel.id} imovel={imovel} />)}
-                    <div>
-                    <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm overflow-hidden" aria-label="Pagination">
+                    {
+                        !loadingImoveis && <div>
+                        <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm overflow-hidden" aria-label="Pagination">
                             {
                                 page > 1 && <a
                             href="#"
@@ -146,7 +147,7 @@ const Busca = () => {
                             </span>
                             
                             {
-                                count && (page+1 <= Math.ceil(count/pageSize)) && <a
+                                !!count && (page+1 <= Math.ceil(count/pageSize)) && <a
                                 href="#"
                                 onClick={() => setPage(page+1)}
                                 className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
@@ -155,7 +156,7 @@ const Busca = () => {
                                 </a>
                             }
                             {
-                                count && (page+2 <= Math.ceil(count/pageSize)) && <a
+                                !!count && (page+2 <= Math.ceil(count/pageSize)) && <a
                                 href="#"
                                 onClick={() => setPage(page+2)}
                                 className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
@@ -164,7 +165,7 @@ const Busca = () => {
                                 </a>
                             }
                             {
-                                count && (page+3 <= Math.ceil(count/pageSize)) && <a
+                                !!count && (page+3 <= Math.ceil(count/pageSize)) && <a
                                 href="#"
                                 onClick={() => setPage(page+3)}
                                 className="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex"
@@ -173,7 +174,7 @@ const Busca = () => {
                                 </a>
                             }
                             {
-                                count && (page+1 <= Math.ceil(count/pageSize)) && <a
+                                !!count && (page+1 <= Math.ceil(count/pageSize)) && <a
                                 href="#"
                                 onClick={() => setPage(page+1)}
                                 className="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0"
@@ -185,6 +186,7 @@ const Busca = () => {
                             
                         </nav>
                     </div>
+                    }
                 </div>
             </div>
         </div>

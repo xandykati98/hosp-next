@@ -2,14 +2,22 @@ import { createTRPCRouter, publicProcedure, privateProcedure } from '../trpc'
 import { z } from 'zod'
 
 const getImoveisInput = {
-    tipos: z.array(z.string())
+    tipos: z.array(z.string()),
+    isLocacao: z.boolean(),
+    isVenda: z.boolean(),
 }
 export const buscaRouter = createTRPCRouter({
     getImoveisCount: publicProcedure.input(z.object(getImoveisInput)).query(async ({ ctx, input }) => {
+        
         const where: {
-            tipo?: any
+            tipo?: any            
+            isAtivo: true
+            isLocacao: boolean
+            isVenda: boolean
         } = {
-
+            isAtivo: true,
+            isVenda: input.isVenda,
+            isLocacao: input.isLocacao
         }
 
         if (input.tipos.length > 0) {
@@ -26,9 +34,14 @@ export const buscaRouter = createTRPCRouter({
         }
 
         const where: {
-            tipo?: any
+            tipo?: any            
+            isAtivo: true
+            isLocacao: boolean
+            isVenda: boolean
         } = {
-
+            isAtivo: true,
+            isVenda: input.isVenda,
+            isLocacao: input.isLocacao
         }
 
         if (input.tipos.length > 0) {

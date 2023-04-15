@@ -33,6 +33,9 @@ model Imovel {
     isPro                 Boolean
     isUltra               Boolean
     @@index([isAtivo])
+    @@index([isUltra])
+    @@index([isVenda])
+    @@index([isLocacao])
 
     tipo                  String?
     numero                String @db.VarChar(25)
@@ -40,7 +43,7 @@ model Imovel {
     bairro                String @db.VarChar(255)
     cidade                String @db.VarChar(255)
     estado                String @db.VarChar(255)
-
+    @@index([tipo])
     empresaId             String @db.VarChar(255)
     empresa               Empresa @relation(fields: [empresaId], references: [id])
     @@index([empresaId])
