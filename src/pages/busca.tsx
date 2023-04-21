@@ -66,9 +66,9 @@ const Busca = () => {
         tipos, setTipos,
         availableTipos: (tiposDistinct || []).map(({ tipo }: { tipo: string }) => tipo)
     }}>
-        <div className="sm:grid-cols-[296px_1fr] relative mx-auto mt-16 grid w-full max-w-7xl px-4 sm:mt-20 sm:px-6 lg:px-8 xl:mt-32">
-            <div className="self-baseline">
-                <button onClick={() => setMapaActive(!mapaActive)} className="flex flex-row justify-center bg-primary-50 hover:bg-primary-200 text-primary-600 w-full rounded-md py-4 px-4 mb-2">
+        <div className=" sm:grid-cols-[296px_1fr] relative mx-auto mt-24 grid w-full max-w-7xl px-4 sm:mt-20 sm:px-6 lg:px-8 xl:mt-32">
+            <div className="self-baseline mb-4">
+                <button style={{display: 'none'}} onClick={() => setMapaActive(!mapaActive)} className="flex flex-row justify-center bg-primary-50 hover:bg-primary-200 text-primary-600 w-full rounded-md py-4 px-4 mb-2">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="w-6 h-6 mr-2">
                         {
                             mapaActive ? 
@@ -92,7 +92,7 @@ const Busca = () => {
                     <Tipos/>
                 </div>
             </div>
-            <div className="ml-6 flex flex-col mb-6" >
+            <div className="sm:ml-6 flex flex-col mb-6" >
                 {
                     false &&
                     <div className="flex w-full gap-x-4 relative" >
@@ -123,7 +123,7 @@ const Busca = () => {
                     
                     {imoveis?.map(imovel => <ItemImovel key={imovel.id} imovel={imovel} />)}
                     {
-                        !loadingImoveis && <div>
+                        (!loadingImoveis && (imoveis as unknown as any[]).length) ? <div>
                         <nav className="isolate inline-flex -space-x-px rounded-md shadow-sm overflow-hidden" aria-label="Pagination">
                             {
                                 page > 1 && <a
@@ -209,7 +209,8 @@ const Busca = () => {
                             
                         </nav>
                     </div>
-                    }
+                    : null    
+                }
                 </div>
             </div>
         </div>
@@ -298,11 +299,11 @@ const ItemImovel = ({ imovel }:{ imovel: Imovel & { fotos: { [url:string]: strin
         to: { opacity: 1, transform: 'translateY(0px)' },
         delay: 250,
     }))
-    return <AnimatedLink ref={ref} style={springs} href={`/imovel/${imovel.empresaId}/${imovel.id}`} className="sm:grid-cols-[256px_1fr] hover:shadow-lg relative rounded-md border-[1px] border-gray-200 shadow-md bg-white mb-6 flex cursor-pointer overflow-hidden">
+    return <AnimatedLink ref={ref} style={springs} href={`/imovel/${imovel.empresaId}/${imovel.id}`} className="flex-wrap sm:flex-rows flex-col hover:shadow-lg relative rounded-md border-[1px] border-gray-200 shadow-md bg-white mb-6 flex cursor-pointer overflow-hidden">
         { foto?.url ? <div 
                 style={{ backgroundImage: `url(${foto.url})` }}
-                className={`flex flex-col w-64 h-[100%] md:rounded-none bg-cover`}></div> : null }
-        <div className={`flex flex-col ${!foto?.url ? 'w-[100%]': 'w-[calc(100%_-_256px)]'} px-6 py-4`}>
+                className={`flex flex-col sm:w-64 w-[100%] sm:h-[100%] h-64 md:rounded-none bg-cover`}></div> : null }
+        <div className={`flex flex-col ${!foto?.url ? 'w-[100%]': 'sm:w-[calc(100%_-_256px)] w-[100%]'} px-6 py-4`}>
             <div className=" tracking-tight flex flex-row justify-between">
                 <div className="text-3xl text-slate-900 font-bold">{preco}</div>
                 {
@@ -318,7 +319,7 @@ const ItemImovel = ({ imovel }:{ imovel: Imovel & { fotos: { [url:string]: strin
             <div className="mb-1 text-lg font-bold line-clamp-2">
                 {createEndereco()}
             </div>
-            <div className="flex flex-row">
+            <div className="flex sm:flex-row flex-col">
                 <div className="flex flex-col gap-y-1 mt-2">
                     <div className="justify-between rounded-md shadow-sm ring-1 ring-slate-700/10 overflow-hidden w-fit flex-col flex">
                         {!!imovel.quartos && <div className="justify-between border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Quartos()}Quartos</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.quartos}</div></div>}
