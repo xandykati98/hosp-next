@@ -21,22 +21,27 @@ const BuscaContext = createContext({
      */
     tipos: {} as { [tipo:string]: boolean },
     setTipos: (tipos: any) => {},
-    availableTipos: [] as string[]
+    availableTipos: [] as string[],
+    precoVendaMin: 0,
+    setPrecoVendaMin: (preco: number) => {},
+    precoVendaMax: 0,
+    setPrecoVendaMax: (preco: number) => {},
 })
 
+// not currency
+// 10000 => 10.000
 function format(n:number) {
-    const str = n.toString().replace(/\d{3}(?=(\d{3})*,)/g, function (s) {
-        return '.' + s
-    })
-    if (str.startsWith('.')) {
-        return str.slice(1)
-    }
-    return str 
+    const isNegative = n < 0;
+    const str = Math.abs(n).toFixed(0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+    return isNegative ? '-' + str : str;
 }
 
 
 const Busca = () => {
     const [ transacao, setTransacao ] = useState('Comprar')
+    const [ precoVendaMin, setPrecoVendaMin ] = useState(0)
+    const [ precoVendaMax, setPrecoVendaMax ] = useState(0)
+
     const [ tipos, setTipos ] = useState<{[tipo:string]: boolean}>({})
     const { data:tiposDistinct, isLoading: loadingTipos } = api.busca.getTipos.useQuery()
     
@@ -45,8 +50,17 @@ const Busca = () => {
 
     const tiposActives: string[] = Object.entries(tipos).filter(([key, value]) => value).map(([key, value]) => key)
 
-    const { data: imoveis, isLoading: loadingImoveis } = api.busca.getImoveisPage.useQuery({ page, tipos: tiposActives, isVenda: transacao === 'Comprar', isLocacao: transacao === 'Alugar' })
-    const { data: count, isLoading: loadingCount } = api.busca.getImoveisCount.useQuery({ tipos: tiposActives, isVenda: transacao === 'Comprar', isLocacao: transacao === 'Alugar' })
+    const query = {
+        tipos: tiposActives, 
+        isVenda: transacao === 'Comprar', 
+        isLocacao: transacao === 'Alugar',
+        precoVendaMin,
+        precoVendaMax,
+    }
+    const { data: imoveis, isLoading: loadingImoveis } = api.busca.getImoveisPage.useQuery({ 
+        page, ...query
+    })
+    const { data: count, isLoading: loadingCount } = api.busca.getImoveisCount.useQuery(query)
 
     useEffect(() => {
         if (tiposDistinct) {
@@ -64,7 +78,11 @@ const Busca = () => {
         transacao, setTransacao,
         loadingTipos,
         tipos, setTipos,
-        availableTipos: (tiposDistinct || []).map(({ tipo }: { tipo: string }) => tipo)
+        availableTipos: (tiposDistinct || []).map(({ tipo }: { tipo: string }) => tipo),
+        precoVendaMin,
+        setPrecoVendaMin,
+        precoVendaMax,
+        setPrecoVendaMax,
     }}>
         <div className=" sm:grid-cols-[296px_1fr] relative mx-auto mt-24 grid w-full max-w-7xl px-4 sm:mt-20 sm:px-6 lg:px-8 xl:mt-32">
             <div className="self-baseline mb-4">
@@ -90,6 +108,8 @@ const Busca = () => {
                     <div className="bg-gray-200 h-[1px] w-full my-3 mt-5"></div>
                     <div className="mb-2">Qual tipo?</div>
                     <Tipos/>
+                    <div className="mb-2 mt-3">Preço de venda</div>
+                    <PrecosVendas/>
                 </div>
             </div>
             <div className="sm:ml-6 flex flex-col mb-6" >
@@ -305,10 +325,10 @@ const ItemImovel = ({ imovel }:{ imovel: Imovel & { fotos: { [url:string]: strin
                 className={`flex flex-col sm:w-64 w-[100%] sm:h-[100%] h-64 md:rounded-none bg-cover`}></div> : null }
         <div className={`flex flex-col ${!foto?.url ? 'w-[100%]': 'sm:w-[calc(100%_-_256px)] w-[100%]'} px-6 py-4`}>
             <div className=" tracking-tight flex flex-row justify-between">
-                <div className="text-3xl text-slate-900 font-bold">{preco}</div>
+                <div className="sm:text-3xl text-2xl text-slate-900 font-bold">{preco}</div>
                 {
-                    imovel.isPro && <span className="sm:h-8 sm:text-[16px] box-border relative inline-flex items-center justify-center text-center no-underline leading-none whitespace-nowrap font-semibold rounded shrink-0 transition select-none overflow-hidden focus-ring bg-gray-800 hover:bg-gray-900 dark:bg-gray-50 border border-transparent text-gray-50 dark:text-gray-800 dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer hover:text-white h-4 py-1.5 px-2">
-                        Este imóvel é #pro
+                    imovel.isPro && <span className="h-8 sm:text-[16px] box-border relative inline-flex items-center justify-center text-center no-underline leading-none whitespace-nowrap font-semibold rounded shrink-0 transition select-none overflow-hidden focus-ring bg-gray-800 hover:bg-gray-900 dark:bg-gray-50 border border-transparent text-gray-50 dark:text-gray-800 dark:hover:bg-white dark:hover:text-gray-900 cursor-pointer hover:text-white py-1.5 px-2">
+                        Imóvel #PRO
                     </span>
                 }
                 
@@ -321,25 +341,32 @@ const ItemImovel = ({ imovel }:{ imovel: Imovel & { fotos: { [url:string]: strin
             </div>
             <div className="flex sm:flex-row flex-col">
                 <div className="flex flex-col gap-y-1 mt-2">
-                    <div className="justify-between rounded-md shadow-sm ring-1 ring-slate-700/10 overflow-hidden w-fit flex-col flex">
-                        {!!imovel.quartos && <div className="justify-between border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Quartos()}Quartos</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.quartos}</div></div>}
-                        {!!imovel.suites && <div className="justify-between border-t-[1px] border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Suites()}Suítes</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.suites}</div></div>}
-                        {!!imovel.vagas && <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Vagas()}Vagas</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.vagas}</div></div>}
-                        {
-                            !!imovel.banheiros &&
-                            <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">
-                                {Icons.Banheiros()}
-                                Banheiros
+                    {
+                        (!!imovel.quartos || 
+                        !!imovel.suites || 
+                        !!imovel.vagas || 
+                        !!imovel.banheiros || 
+                        !!imovel?.areaTotal && imovel?.areaTotal as unknown as string != '0') ?
+                        <div className="sm:w-fit w-full justify-between rounded-md shadow-sm ring-1 ring-slate-700/10 overflow-hidden flex-col flex">
+                            {!!imovel.quartos && <div className="justify-between border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Quartos()}Quartos</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.quartos}</div></div>}
+                            {!!imovel.suites && <div className="justify-between border-t-[1px] border-slate-700/10 pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Suites()}Suítes</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.suites}</div></div>}
+                            {!!imovel.vagas && <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Vagas()}Vagas</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.vagas}</div></div>}
+                            {
+                                !!imovel.banheiros &&
+                                <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">
+                                    {Icons.Banheiros()}
+                                    Banheiros
+                                    </div>
+                                    <div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.banheiros}</div>
                                 </div>
-                                <div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.banheiros}</div>
-                            </div>
-                        }
-                        {
-                            !!imovel?.areaTotal && imovel?.areaTotal as unknown as string != '0' ? <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Area()}Área</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.areaTotal as unknown as number}m²</div></div> : null
-                        }
-                    </div>
+                            }
+                            {
+                                !!imovel?.areaTotal && imovel?.areaTotal as unknown as string != '0' ? <div className="justify-between border-t-[1px] border-slate-700/10pointer-events-auto relative inline-flex bg-white text-[0.8125rem] font-medium leading-5 text-slate-700 hover:bg-slate-50 hover:text-slate-900"><div className="flex px-3 py-2">{Icons.Area()}Área</div><div className="border-l w-16 flex justify-center border-slate-400/20 px-2.5 py-2">{imovel.areaTotal as unknown as number}m²</div></div> : null
+                            }
+                        </div> : null
+                    }
                 </div>
-                <div className="w-full text-right flex flex-wrap flex-col justify-end content-end">
+                <div className="mt-4 sm:mt-0 w-full text-right flex flex-wrap flex-col justify-end content-end">
                     <button onClick={(e) => {e.preventDefault();alert('Hello')}} className="pointer-events-auto rounded-md bg-primary-600 px-3 py-4 font-semibold leading-5 text-white hover:bg-primary-500">
                         Entrar em contato
                     </button>
@@ -383,6 +410,33 @@ const TiposRelate = {
     'Residential / Home': 'Casa',
     'Residential / Land Lot': 'Terreno',
     'Residential / Penthouse': 'Cobertura',
+}
+
+function PrecosVendas() {
+    const BuscaParams = useContext(BuscaContext)
+    
+    function extractDigits(str:string) {
+        const regex = /\d+/g; // match one or more digits
+        const digits = str.match(regex);
+        return digits ? digits.join('') : ''; // join the matches together and return as a string
+    }
+    const onMin = (value:string) => {
+        BuscaParams.setPrecoVendaMin(Number(extractDigits((value).replaceAll(',', '').replaceAll('.', ''))))
+    }
+    const onMax = (value:string) => {
+        BuscaParams.setPrecoVendaMax(Number(extractDigits((value).replaceAll(',', '').replaceAll('.', ''))))
+    }
+
+    return <div>
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-x-2">
+                <input value={!BuscaParams.precoVendaMin ? undefined : format(BuscaParams.precoVendaMin)} onChange={(e) => onMin(e.target.value)} type="text" placeholder="R$ 0" className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
+                <span>até</span>                
+                <input value={!BuscaParams.precoVendaMax ? undefined : format(BuscaParams.precoVendaMax)} onChange={(e) => onMax(e.target.value)} type="text" placeholder="R$ 0" className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
+            </div>
+        </div>
+
+    </div>
 }
 
 function Tipos() {

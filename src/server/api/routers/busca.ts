@@ -5,12 +5,15 @@ const getImoveisInput = {
     tipos: z.array(z.string()),
     isLocacao: z.boolean(),
     isVenda: z.boolean(),
+    precoVendaMin: z.number(),
+    precoVendaMax: z.number(),
 }
 export const buscaRouter = createTRPCRouter({
     getImoveisCount: publicProcedure.input(z.object(getImoveisInput)).query(async ({ ctx, input }) => {
         
         const where: {
-            tipo?: any            
+            tipo?: any      
+            precoVenda?: { gte?: number, lte?: number }
             isAtivo: true
             isLocacao: boolean
             isVenda: boolean
@@ -18,6 +21,16 @@ export const buscaRouter = createTRPCRouter({
             isAtivo: true,
             isVenda: input.isVenda,
             isLocacao: input.isLocacao
+        }
+
+        if (input.precoVendaMin > 0 || input.precoVendaMax > 0) {
+            where.precoVenda = {}
+            if (input.precoVendaMin > 0) {
+                where.precoVenda.gte = input.precoVendaMin
+            }
+            if (input.precoVendaMax > 0) {
+                where.precoVenda.lte = input.precoVendaMax
+            }
         }
 
         if (input.tipos.length > 0) {
@@ -34,7 +47,8 @@ export const buscaRouter = createTRPCRouter({
         }
 
         const where: {
-            tipo?: any            
+            tipo?: any      
+            precoVenda?: { gte?: number, lte?: number }
             isAtivo: true
             isLocacao: boolean
             isVenda: boolean
@@ -42,6 +56,16 @@ export const buscaRouter = createTRPCRouter({
             isAtivo: true,
             isVenda: input.isVenda,
             isLocacao: input.isLocacao
+        }
+        
+        if (input.precoVendaMin > 0 || input.precoVendaMax > 0) {
+            where.precoVenda = {}
+            if (input.precoVendaMin > 0) {
+                where.precoVenda.gte = input.precoVendaMin
+            }
+            if (input.precoVendaMax > 0) {
+                where.precoVenda.lte = input.precoVendaMax
+            }
         }
 
         if (input.tipos.length > 0) {

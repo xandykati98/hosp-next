@@ -10,6 +10,19 @@ function Count() {
     { id: 3, name: 'Imobiliárias/Corretores', value: '16.027' },
   ]
   
+
+  return (
+    <div className="bg-white py-24 sm:py-32">
+      <div className="mx-auto max-w-7xl px-6 lg:px-8">
+        <dl className="grid grid-cols-1 gap-x-8 gap-y-16 text-center lg:grid-cols-3">
+          {stats.map((stat) => <Item stat={stat} key={stat.id}/>)}
+        </dl>
+      </div>
+    </div>
+  )
+}
+
+const Item = ({ stat }: { stat: { id: number, name: string, value: string }}) => {
   const [ref, springs] = useInView(
     () => ({
       from: {
@@ -33,23 +46,12 @@ function Count() {
       },
     })
   )
-
-  return (
-    <div className="bg-white py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-6 lg:px-8">
-        <dl className="grid grid-cols-1 gap-x-8 gap-y-16 text-center lg:grid-cols-3">
-          {stats.map((stat) => (
-            <div key={stat.id} className="mx-auto flex max-w-xs flex-col gap-y-4">
-              <animated.dt style={springs_withY} ref={ref_withY} className="text-base leading-7 text-gray-600">{stat.name}</animated.dt>
-              <animated.dd style={springs} ref={ref} className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
-                {stat.value}
-              </animated.dd>
-            </div>
-          ))}
-        </dl>
-      </div>
-    </div>
-  )
+  return <div key={stat.id} className="mx-auto flex max-w-xs flex-col gap-y-4">
+    <animated.dt style={springs_withY} ref={ref_withY} className="text-base leading-7 text-gray-600">{stat.name}</animated.dt>
+    <animated.dd style={springs} ref={ref} className="order-first text-3xl font-semibold tracking-tight text-gray-900 sm:text-5xl">
+      {stat.value}
+    </animated.dd>
+  </div>
 }
 
 export default function Home() {
