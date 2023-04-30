@@ -26,6 +26,12 @@ const BuscaContext = createContext({
     setPrecoVendaMin: (preco: number) => {},
     precoVendaMax: 0,
     setPrecoVendaMax: (preco: number) => {},
+    precoLocacaoMin: 0,
+    setPrecoLocacaoMin: (preco: number) => {},
+    precoLocacaoMax: 0,
+    setPrecoLocacaoMax: (preco: number) => {},
+    quartos: 0,
+    setQuartos: (quartos: number) => {}
 })
 
 // not currency
@@ -41,6 +47,9 @@ const Busca = () => {
     const [ transacao, setTransacao ] = useState('Comprar')
     const [ precoVendaMin, setPrecoVendaMin ] = useState(0)
     const [ precoVendaMax, setPrecoVendaMax ] = useState(0)
+    const [ precoLocacaoMin, setPrecoLocacaoMin ] = useState(0)
+    const [ precoLocacaoMax, setPrecoLocacaoMax ] = useState(0)
+    const [ quartos, setQuartos ] = useState(0)
 
     const [ tipos, setTipos ] = useState<{[tipo:string]: boolean}>({})
     const { data:tiposDistinct, isLoading: loadingTipos } = api.busca.getTipos.useQuery()
@@ -56,6 +65,9 @@ const Busca = () => {
         isLocacao: transacao === 'Alugar',
         precoVendaMin,
         precoVendaMax,
+        precoLocacaoMin,
+        precoLocacaoMax,
+        quartos
     }
     const { data: imoveis, isLoading: loadingImoveis } = api.busca.getImoveisPage.useQuery({ 
         page, ...query
@@ -83,6 +95,12 @@ const Busca = () => {
         setPrecoVendaMin,
         precoVendaMax,
         setPrecoVendaMax,
+        precoLocacaoMin,
+        setPrecoLocacaoMin,
+        precoLocacaoMax,
+        setPrecoLocacaoMax,
+        quartos,
+        setQuartos
     }}>
         <div className=" sm:grid-cols-[296px_1fr] relative mx-auto mt-24 grid w-full max-w-7xl px-4 sm:mt-20 sm:px-6 lg:px-8 xl:mt-32">
             <div className="self-baseline mb-4">
@@ -110,6 +128,11 @@ const Busca = () => {
                     <Tipos/>
                     <div className="mb-2 mt-3">Preço de venda</div>
                     <PrecosVendas/>
+                    <div className="mb-2 mt-3">Preço de aluguel</div>
+                    <PrecosLocacao/>
+                    <div className="bg-gray-200 h-[1px] w-full my-3 mt-5"></div>
+                    <div className="mb-2 mt-3">Quartos</div>
+                    <Quartos/>
                 </div>
             </div>
             <div className="sm:ml-6 flex flex-col mb-6" >
@@ -430,12 +453,71 @@ function PrecosVendas() {
     return <div>
         <div className="flex items-center justify-between">
             <div className="flex items-center gap-x-2">
-                <input value={!BuscaParams.precoVendaMin ? undefined : format(BuscaParams.precoVendaMin)} onChange={(e) => onMin(e.target.value)} type="text" placeholder="R$ 0" className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
+                <input value={!BuscaParams.precoVendaMin ? undefined : format(BuscaParams.precoVendaMin)} onChange={(e) => onMin(e.target.value)} type="text" placeholder="R$ 0" className="outline-primary-200 inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
                 <span>até</span>                
-                <input value={!BuscaParams.precoVendaMax ? undefined : format(BuscaParams.precoVendaMax)} onChange={(e) => onMax(e.target.value)} type="text" placeholder="R$ 0" className="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
+                <input value={!BuscaParams.precoVendaMax ? undefined : format(BuscaParams.precoVendaMax)} onChange={(e) => onMax(e.target.value)} type="text" placeholder="R$ 0" className="outline-primary-200 inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
             </div>
         </div>
+    </div>
+}
 
+function PrecosLocacao() {
+    const BuscaParams = useContext(BuscaContext)
+    
+    function extractDigits(str:string) {
+        const regex = /\d+/g; // match one or more digits
+        const digits = str.match(regex);
+        return digits ? digits.join('') : ''; // join the matches together and return as a string
+    }
+    const onMin = (value:string) => {
+        BuscaParams.setPrecoLocacaoMin(Number(extractDigits((value).replaceAll(',', '').replaceAll('.', ''))))
+    }
+    const onMax = (value:string) => {
+        BuscaParams.setPrecoLocacaoMax(Number(extractDigits((value).replaceAll(',', '').replaceAll('.', ''))))
+    }
+
+    return <div>
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-x-2">
+                <input value={!BuscaParams.precoLocacaoMin ? undefined : format(BuscaParams.precoLocacaoMin)} onChange={(e) => onMin(e.target.value)} type="text" placeholder="R$ 0" className="outline-primary-200 inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
+                <span>até</span>                
+                <input 
+                value={!BuscaParams.precoLocacaoMax ? undefined : format(BuscaParams.precoLocacaoMax)} 
+                onChange={(e) => onMax(e.target.value)} 
+                type="text" placeholder="R$ 0" 
+                className="outline-primary-200 inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
+            </div>
+        </div>
+    </div>
+}
+
+function Quartos() {
+    const BuscaParams = useContext(BuscaContext)
+
+    const isActive = (quartos: number) => {
+        if (BuscaParams.quartos === quartos) {
+            return 'bg-primary-600 text-white hover:bg-primary-700 ring-primary-200 ring-gray-300'
+        } else {
+            return 'bg-white hover:bg-gray-50 ring-gray-300'
+        }
+    }
+
+    const setActive = (quartos: number) => {
+        if (quartos === BuscaParams.quartos) {
+            BuscaParams.setQuartos(0)
+        } else {
+            BuscaParams.setQuartos(quartos)
+        }
+    }
+
+    return <OneToFourList setActive={setActive} isActive={isActive}/>
+}
+const OneToFourList = ({ setActive, isActive }: { setActive: (qtd:number) => void, isActive: (qtd:number) => string}) => {
+    return <div className="w-full flex items-center flex-row justify-between">
+        <div onClick={() => setActive(1)} className={`${isActive(1)} select-none cursor-pointer rounded-md w-[20%] text-sm font-semibold text-gray-900 shadow-sm ring-1 py-2 text-center`}>1</div>
+        <div onClick={() => setActive(2)} className={`${isActive(2)} select-none cursor-pointer rounded-md w-[20%] text-sm font-semibold text-gray-900 shadow-sm ring-1 py-2 text-center`}>2</div>
+        <div onClick={() => setActive(3)} className={`${isActive(3)} select-none cursor-pointer rounded-md w-[20%] text-sm font-semibold text-gray-900 shadow-sm ring-1 py-2 text-center`}>3</div>
+        <div onClick={() => setActive(4)} className={`${isActive(4)} select-none cursor-pointer rounded-md w-[20%] text-sm font-semibold text-gray-900 shadow-sm ring-1 py-2 text-center`}>4+</div>
     </div>
 }
 
