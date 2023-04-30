@@ -1,5 +1,5 @@
-import { Imovel } from "@prisma/client";
-import { NextPageContext } from "next";
+import type { Imovel } from "@prisma/client";
+import type { NextPageContext } from "next";
 import { prisma } from "~/server/db";
 
 const ImovelPage = (props:{ wstrdates_imovel:Imovel }) => {
@@ -14,7 +14,7 @@ const ImovelPage = (props:{ wstrdates_imovel:Imovel }) => {
 }
 
 
-export const getServerSideProps = async (context:NextPageContext) => {
+export const getServerSideProps = async (context:NextPageContext): Promise<{ props?: { wstrdates_imovel: Imovel; }; notFound?: boolean; }> => {
     const { empresa_id, imovel_id } = context.query
     const imovel = await prisma.imovel.findFirst({
         where: {
@@ -25,7 +25,7 @@ export const getServerSideProps = async (context:NextPageContext) => {
     if (!imovel) return { notFound: true }
     return {
         props: { 
-            wstrdates_imovel: JSON.parse(JSON.stringify(imovel))
+            wstrdates_imovel: JSON.parse(JSON.stringify(imovel)) as unknown as Imovel
         }
     }
 }

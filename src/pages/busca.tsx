@@ -31,7 +31,15 @@ const BuscaContext = createContext({
     precoLocacaoMax: 0,
     setPrecoLocacaoMax: (preco: number) => {},
     quartos: 0,
-    setQuartos: (quartos: number) => {}
+    setQuartos: (quartos: number) => {},
+    banheiros: 0,
+    setBanheiros: (banheiros: number) => {},
+    vagas: 0,
+    setVagas: (vagas: number) => {},
+    areaMin: 0,
+    setAreaMin: (area: number) => {},
+    areaMax: 0,
+    setAreaMax: (area: number) => {},
 })
 
 // not currency
@@ -49,7 +57,13 @@ const Busca = () => {
     const [ precoVendaMax, setPrecoVendaMax ] = useState(0)
     const [ precoLocacaoMin, setPrecoLocacaoMin ] = useState(0)
     const [ precoLocacaoMax, setPrecoLocacaoMax ] = useState(0)
+    const [ areaMin, setAreaMin ] = useState(0)
+    const [ areaMax, setAreaMax ] = useState(0)
+
     const [ quartos, setQuartos ] = useState(0)
+    const [ banheiros, setBanheiros ] = useState(0)
+    const [ vagas, setVagas ] = useState(0)
+    
 
     const [ tipos, setTipos ] = useState<{[tipo:string]: boolean}>({})
     const { data:tiposDistinct, isLoading: loadingTipos } = api.busca.getTipos.useQuery()
@@ -67,7 +81,11 @@ const Busca = () => {
         precoVendaMax,
         precoLocacaoMin,
         precoLocacaoMax,
-        quartos
+        quartos,
+        banheiros,
+        vagas,
+        areaMin,
+        areaMax
     }
     const { data: imoveis, isLoading: loadingImoveis } = api.busca.getImoveisPage.useQuery({ 
         page, ...query
@@ -100,7 +118,15 @@ const Busca = () => {
         precoLocacaoMax,
         setPrecoLocacaoMax,
         quartos,
-        setQuartos
+        setQuartos,
+        banheiros,
+        setBanheiros,
+        vagas,
+        setVagas,
+        areaMin,
+        setAreaMin,
+        areaMax,
+        setAreaMax,
     }}>
         <div className=" sm:grid-cols-[296px_1fr] relative mx-auto mt-24 grid w-full max-w-7xl px-4 sm:mt-20 sm:px-6 lg:px-8 xl:mt-32">
             <div className="self-baseline mb-4">
@@ -131,8 +157,14 @@ const Busca = () => {
                     <div className="mb-2 mt-3">Preço de aluguel</div>
                     <PrecosLocacao/>
                     <div className="bg-gray-200 h-[1px] w-full my-3 mt-5"></div>
-                    <div className="mb-2 mt-3">Quartos</div>
+                    <div className="mb-2">Quartos</div>
                     <Quartos/>
+                    <div className="mb-2 mt-3">Banheiros</div>
+                    <Banheiros/>
+                    <div className="mb-2 mt-3">Vagas</div>
+                    <Vagas/>
+                    <div className="mb-2 mt-3">Área</div>
+                    <Area/>
                 </div>
             </div>
             <div className="sm:ml-6 flex flex-col mb-6" >
@@ -512,6 +544,51 @@ function Quartos() {
 
     return <OneToFourList setActive={setActive} isActive={isActive}/>
 }
+
+function Banheiros() {
+    const BuscaParams = useContext(BuscaContext)
+
+    const isActive = (banheiros: number) => {
+        if (BuscaParams.banheiros === banheiros) {
+            return 'bg-primary-600 text-white hover:bg-primary-700 ring-primary-200 ring-gray-300'
+        } else {
+            return 'bg-white hover:bg-gray-50 ring-gray-300'
+        }
+    }
+
+    const setActive = (banheiros: number) => {
+        if (banheiros === BuscaParams.banheiros) {
+            BuscaParams.setBanheiros(0)
+        } else {
+            BuscaParams.setBanheiros(banheiros)
+        }
+    }
+
+    return <OneToFourList setActive={setActive} isActive={isActive}/>
+}
+
+function Vagas() {
+    const BuscaParams = useContext(BuscaContext)
+
+    const isActive = (vagas: number) => {
+        if (BuscaParams.vagas === vagas) {
+            return 'bg-primary-600 text-white hover:bg-primary-700 ring-primary-200 ring-gray-300'
+        } else {
+            return 'bg-white hover:bg-gray-50 ring-gray-300'
+        }
+    }
+
+    const setActive = (vagas: number) => {
+        if (vagas === BuscaParams.vagas) {
+            BuscaParams.setVagas(0)
+        } else {
+            BuscaParams.setVagas(vagas)
+        }
+    }
+
+    return <OneToFourList setActive={setActive} isActive={isActive}/>
+}
+
 const OneToFourList = ({ setActive, isActive }: { setActive: (qtd:number) => void, isActive: (qtd:number) => string}) => {
     return <div className="w-full flex items-center flex-row justify-between">
         <div onClick={() => setActive(1)} className={`${isActive(1)} select-none cursor-pointer rounded-md w-[20%] text-sm font-semibold text-gray-900 shadow-sm ring-1 py-2 text-center`}>1</div>
@@ -595,6 +672,33 @@ function Tipos() {
     )
 }
 
+function Area() {
+    
+    const BuscaParams = useContext(BuscaContext)
+    
+    function extractDigits(str:string) {
+        const regex = /\d+/g; // match one or more digits
+        const digits = str.match(regex);
+        return digits ? digits.join('') : ''; // join the matches together and return as a string
+    }
+    const onMin = (value:string) => {
+        BuscaParams.setAreaMin(Number(extractDigits((value).replaceAll(',', '').replaceAll('.', ''))))
+    }
+    const onMax = (value:string) => {
+        BuscaParams.setAreaMax(Number(extractDigits((value).replaceAll(',', '').replaceAll('.', ''))))
+    }
+
+    return <div>
+        <div className="flex items-center justify-between">
+            <div className="flex items-center gap-x-2">
+                <input value={!BuscaParams.areaMin ? undefined : format(BuscaParams.areaMin)} onChange={(e) => onMin(e.target.value)} type="text" placeholder="0m²" className="outline-primary-200 inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
+                <span>até</span>                
+                <input value={!BuscaParams.areaMax ? undefined : format(BuscaParams.areaMax)} onChange={(e) => onMax(e.target.value)} type="text" placeholder="1000m²" className="outline-primary-200 inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50" />
+            </div>
+        </div>
+    </div>
+}
+
 function SwitchComp({ value, toggleEnabled = () => {} }: { value: boolean, toggleEnabled?: () => void }) {
   
     return (
@@ -615,6 +719,6 @@ function SwitchComp({ value, toggleEnabled = () => {} }: { value: boolean, toggl
           />
         </Switch>
     )
-  }
+}
 
 export default Busca
